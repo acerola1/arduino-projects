@@ -33,6 +33,13 @@ uint16_t grain2PhaseInc;
 uint16_t grain2Amp;
 uint8_t grain2Decay;
 
+uint16_t sync = 300;
+uint16_t freq1 = 300;
+uint16_t decay1 = 300;
+uint16_t freq2 = 300;
+uint16_t decay2 = 300;
+uint16_t temp;
+
 // Map Analogue channels
 #define SYNC_CONTROL         (4)
 #define GRAIN_FREQ_CONTROL   (0)
@@ -159,14 +166,23 @@ void loop() {
   
   // Stepped pentatonic mapping: D, E, G, A, B
 
-  uint16_t sync = analogRead(SYNC_CONTROL);
-  Serial.println(sync);
+  sync = (temp=analogRead(SYNC_CONTROL)) > 10 ? temp : sync; //4
+  freq1 = (temp=analogRead(GRAIN_FREQ_CONTROL)) > 10 ? temp : freq1; //0
+  decay1 = (temp=analogRead(GRAIN_DECAY_CONTROL)) > 10 ? temp : decay1; //2
+  freq2 = (temp=analogRead(GRAIN2_FREQ_CONTROL)) > 10 ? temp : freq2; //3
+  decay2 = (temp=analogRead(GRAIN2_DECAY_CONTROL)) > 10 ? temp : decay2; //1
+
+  /*char buf[20];
+  sprintf(buf, "%d,%d,%d,%d,%d", freq1, decay2, decay1, freq2, sync);
+  
+  Serial.println(buf);*/
+
   syncPhaseInc = mapPentatonic(sync);
 
-  grainPhaseInc  = mapPhaseInc(analogRead(GRAIN_FREQ_CONTROL)) / 2;
-  grainDecay     = analogRead(GRAIN_DECAY_CONTROL) / 8;
-  grain2PhaseInc = mapPhaseInc(analogRead(GRAIN2_FREQ_CONTROL)) / 2;
-  grain2Decay    = analogRead(GRAIN2_DECAY_CONTROL) / 4;
+  grainPhaseInc  = mapPhaseInc(analogRead(freq1)) / 2;
+  grainDecay     = analogRead(decay1) / 8;
+  grain2PhaseInc = mapPhaseInc(analogRead(freq2)) / 2;
+  grain2Decay    = analogRead(decay2) / 4;
 }
 
 SIGNAL(PWM_INTERRUPT)
